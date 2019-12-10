@@ -56,11 +56,18 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
     let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]/* What goes here? */ };
-    res.render("urls_show", templateVars); 
+    res.render("urls_show", templateVars);
   } else {
     res.redirect("/urls/new");
   }
 });
+
+// UPDATE :shortURL
+app.post("/urls/:shortURL", (req, res) => {
+  urlDatabase[req.params.shortURL] = req.body.newLongURL;
+  console.log(urlDatabase);
+  res.redirect("/urls");
+})
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
@@ -69,6 +76,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }
   res.redirect("/urls");
 })
+
 
 
 
