@@ -115,8 +115,13 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = { user: users[req.cookies["user_id"]] };
-  res.render("urls_new", templateVars);
+  if (req.cookies["user_id"]) {
+    let templateVars = { user: users[req.cookies["user_id"]] };
+    res.render("urls_new", templateVars); 
+  } else {
+    let templateVars = { user: users[req.cookies["user_id"]] };
+    res.render("login", templateVars)
+  }
 });
 
 app.post("/urls", (req, res) => {
