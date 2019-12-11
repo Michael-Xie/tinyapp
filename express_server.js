@@ -47,14 +47,30 @@ const hasEmail = function(email) {
   return false;
 }
 
+const findUserID = function(info, type) {
+  for (let user in users) {
+    if (users[user][type] === info){
+      return user;
+    }
+  }
+  return undefined;
+}
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
-  console.log(req.body.username);
-  res.redirect("/urls");
+  let userID = findUserID(req.body.email, "email");
+  if(hasEmail(req.body.email) && users[userID].password === req.body.password) {
+    res.cookie("user_id", userID);
+    console.log(userID);
+    res.redirect("/urls");
+  } else if (!hasEmail(req.body.email)){
+    res.status(403).send("Email not found. Try again.")
+  } else {
+    res.status(403).send("Password doesn't match. Try Again.")
+  }
 });
 
 app.post("/logout", (req, res) => {
@@ -87,6 +103,11 @@ app.post("/register", (req, res) => {
     res.redirect("/urls");
   }
 })
+
+app.get("/login", (req, res) => {
+  let templateVars = { urls: urlDatabase, user: users[req.cookies["user_id"]] };
+  res.render("login", templateVars);
+});
 
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase, user: users[req.cookies["user_id"]] };
