@@ -11,6 +11,7 @@ function generateRandomString() {
 }
 const express = require("express");
 const cookieParser = require("cookie-parser");
+const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -82,7 +83,7 @@ app.get("/", (req, res) => {
 
 app.post("/login", (req, res) => {
   let userID = findUserID(req.body.email, "email");
-  if (hasEmail(req.body.email) && users[userID].password === req.body.password) {
+  if (hasEmail(req.body.email) && bcrypt.compareSync(req.body.password, users[userID].password)) {
     res.cookie("user_id", userID);
     console.log(userID);
     res.redirect("/urls");
@@ -115,7 +116,7 @@ app.post("/register", (req, res) => {
     res.status(400).send("Email already exist. Try another one.");
     return;
   } else {
-    users[userID] = { id: userID, email: req.body.email, password: req.body.password };
+    users[userID] = { id: userID, email: req.body.email, password: bcrypt.hashSync(req.body.password, 10) };
     res.cookie("user_id", userID);
     res.redirect("/urls");
   }
