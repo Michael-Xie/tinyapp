@@ -167,7 +167,7 @@ app.get("/urls/:shortURL", (req, res) => {
   if (!req.cookies["user_id"]) {
     res.send("Please log in to see page");
     return;
-  } 
+  }
   console.log("shorturl:", req.params.shortURL);
   console.log("user urls: ", urlsForUser(req.cookies["user_id"]));
   console.log("compare result: ", urlsForUser(req.cookies["user_id"]).includes(req.params.shortURL));
@@ -188,16 +188,20 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // UPDATE :shortURL
 app.post("/urls/:shortURL", (req, res) => {
-  urlDatabase[req.params.shortURL] = { longURL: req.body.newLongURL, userID: req.cookies["user_id"] };
-  console.log(urlDatabase);
+  if (req.cookies["user_id"] && urlsForUser(req.cookies["user_id"]).includes(req.params.shortURL)) {
+
+    urlDatabase[req.params.shortURL] = { longURL: req.body.newLongURL, userID: req.cookies["user_id"] };
+  }
+  console.log("After Edit:", urlDatabase);
   res.redirect("/urls");
 })
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  if (urlDatabase[req.params.shortURL]) {
+  if (req.cookies["user_id"] && urlsForUser(req.cookies["user_id"]).includes(req.params.shortURL)) {
     delete urlDatabase[req.params.shortURL];
-    console.log("After Delete: ", urlDatabase);
   }
+  console.log("After Delete: ", urlDatabase);
+
   res.redirect("/urls");
 })
 
