@@ -38,6 +38,15 @@ const users = {
   }
 }
 
+const hasEmail = function(email) {
+  for (let user in users) {
+    if (users[user].email === email) {
+      return true;
+    }
+  }
+  return false;
+}
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -62,11 +71,20 @@ app.post("/register", (req, res) => {
   // urlDatabase[req.params.shortURL] = req.body.newLongURL;
   // console.log(urlDatabase);
   let userID = generateRandomString();
-  users[userID] = {id: userID, email: req.body.email, password: req.body.password};
-  res.cookie("user_id", userID);
-  console.log(req.body);
-  console.log(users);
-  res.redirect("/urls");
+  console.log("has email in user?:", hasEmail(req.body.email));
+  if (!req.body.email || !req.body.password) {
+    res.status(400).send("Please fill in both your email and password");
+    return;
+  } else if (hasEmail(req.body.email)) {
+    res.status(400).send("Email already exist. Try another one.");
+    return;
+  } else {
+    users[userID] = {id: userID, email: req.body.email, password: req.body.password};
+    res.cookie("user_id", userID);
+    console.log(req.body);
+    console.log(users);
+    res.redirect("/urls");
+  }
 })
 
 app.get("/urls", (req, res) => {
