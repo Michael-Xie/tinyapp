@@ -46,12 +46,12 @@ const users = {
   "aJ48lW": {
     id: "aJ48lW",
     email: "user@example.com",
-    password: "123"
+    password: "$2b$10$qgxfbasQ.RFYhuKgvPh7rOBR5JLxAgVQz5cti1cwZMc3TSBoObk/m"
   },
   "user2RandomID": {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "123"
+    password: "$2b$10$qgxfbasQ.RFYhuKgvPh7rOBR5JLxAgVQz5cti1cwZMc3TSBoObk/m"
   }
 }
 
@@ -79,15 +79,14 @@ app.get("/", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  let userID = getUserByEmail(req.body.email, users).id;
-  if (hasEmail(req.body.email) && bcrypt.compareSync(req.body.password, users[userID].password)) {
-    req.session.user_id = userID;
-    console.log(userID);
-    res.redirect("/urls");
-  } else if (!hasEmail(req.body.email)) {
+  let user = getUserByEmail(req.body.email, users);
+  if (!user) {
     res.status(403).send("Email not found. Try again.")
-  } else {
+  } else if (!bcrypt.compareSync(req.body.password, user.password)) {
     res.status(403).send("Password doesn't match. Try Again.")
+  } else {
+    req.session.user_id = user.id;
+    res.redirect("/urls");
   }
 });
 
@@ -166,7 +165,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   if (!req.session["user_id"]) {
-    res.send("Please log in to see page");
+    res.status(401).send("Please log in to see page");
     return;
   }
   console.log("shorturl:", req.params.shortURL);
@@ -175,7 +174,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 
   if (!(urlsForUser(req.session["user_id"]).includes(req.params.shortURL))) {
-    res.send(`shortURL: ${req.params.shortURL} doesn't belong to you.`)
+    res.status(401).send(`shortURL: ${req.params.shortURL} doesn't belong to you.`)
     return;
   }
 
