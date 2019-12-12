@@ -13,14 +13,14 @@ app.use(cookieSession({
   keys: ["key1", "key2"]
 }));
 
-const getCurrentDate = function() {
+const getCurrentDate = function () {
   let date = new Date();
-  return date.toString();
+  return date.toDateString();
 };
 
 const urlDatabase = {
-  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW", dateCreated: getCurrentDate()},
-  i3BoGr: { longURL: "https://www.google.ca", userID: "user2RandomID", dateCreated: getCurrentDate()}
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW", dateCreated: getCurrentDate(), numVisit: 0, uniqueVisitor: [] },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "user2RandomID", dateCreated: getCurrentDate(), numVisit: 0, uniqueVisitor: [] }
 };
 
 const users = {
@@ -36,7 +36,27 @@ const users = {
   }
 }
 
+const hasVistorID = function (url_id, visitor_id, urlDatabase) {
+  console.log(urlDatabase[url_id].uniqueVisitor);
+  console.log(visitor_id);
+  console.log(urlDatabase[url_id].uniqueVisitor.includes(visitor_id));
+  return urlDatabase[url_id].uniqueVisitor.includes(visitor_id);
+}
 
+app.use("/u/:shortURL", (req, res, next) => {
+  if (!req.session.visitor_id) {
+    req.session.visitor_id = generateRandomString();
+  }
+
+  if (!hasVistorID(req.params.shortURL, req.session.visitor_id, urlDatabase)) {
+    urlDatabase[req.params.shortURL].uniqueVisitor.push(req.session.visitor_id);
+    console.log(urlDatabase);
+  }
+  if (urlDatabase[req.params.shortURL]) {
+    urlDatabase[req.params.shortURL].numVisit++;
+  }
+  next();
+});
 
 app.get("/", (req, res) => {
   if (req.session.user_id) {
@@ -137,7 +157,7 @@ app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
   let longURL = req.body.longURL;
   console.log(longURL);
-  urlDatabase[shortURL] = { longURL: longURL, userID: req.session.user_id };
+  urlDatabase[shortURL] = { longURL: longURL, userID: req.session.user_id, dateCreated: getCurrentDate(), numVisit: 0, uniqueVisitor: [] };
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -164,7 +184,7 @@ app.get("/urls/:shortURL", (req, res) => {
   }
 
   if (urlDatabase[req.params.shortURL]) {
-    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[req.session.user_id] };
+    let templateVars = { shortURL: req.params.shortURL, url: urlDatabase[req.params.shortURL], user: users[req.session.user_id] };
     res.render("urls_show", templateVars);
   } else {
     res.redirect("/urls/new");
@@ -176,7 +196,7 @@ app.post("/urls/:shortURL", (req, res) => {
   console.log("POST /urls/:shortURL");
   if (req.session.user_id && urlsForUser(req.session.user_id, urlDatabase).includes(req.params.shortURL)) {
 
-    urlDatabase[req.params.shortURL] = { longURL: req.body.newLongURL, userID: req.session.user_id };
+    urlDatabase[req.params.shortURL] = { longURL: req.body.newLongURL, userID: req.session.user_id , dateCreated: getCurrentDate(), numVisit: 0, uniqueVisitor: []};
   }
   console.log("After Edit:", urlDatabase);
   res.redirect("/urls");
