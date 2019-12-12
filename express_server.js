@@ -55,15 +55,6 @@ const users = {
   }
 }
 
-const hasEmail = function (email) {
-  for (let user in users) {
-    if (users[user].email === email) {
-      return true;
-    }
-  }
-  return false;
-}
-
 const urlsForUser = function (id) {
   let urls = [];
   for (let url in urlDatabase) {
@@ -75,7 +66,11 @@ const urlsForUser = function (id) {
 }
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  if(req.session.user_id) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.post("/login", (req, res) => {
@@ -108,7 +103,7 @@ app.post("/register", (req, res) => {
   if (!req.body.email || !req.body.password) {
     res.status(400).send("Please fill in both your email and password");
     return;
-  } else if (hasEmail(req.body.email)) {
+  } else if (getUserByEmail(req.body.email, users)) {
     res.status(400).send("Email already exist. Try another one.");
     return;
   } else {
