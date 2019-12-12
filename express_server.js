@@ -13,9 +13,14 @@ app.use(cookieSession({
   keys: ["key1", "key2"]
 }));
 
+const getCurrentDate = function() {
+  let date = new Date();
+  return date.toString();
+};
+
 const urlDatabase = {
-  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
-  i3BoGr: { longURL: "https://www.google.ca", userID: "user2RandomID" }
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW", dateCreated: getCurrentDate()},
+  i3BoGr: { longURL: "https://www.google.ca", userID: "user2RandomID", dateCreated: getCurrentDate()}
 };
 
 const users = {
@@ -45,10 +50,10 @@ app.post("/login", (req, res) => {
   console.log("GET /login");
   let user = getUserByEmail(req.body.email, users);
   if (!user) {
-    res.status(403).send("Email not found. Try again.");
+    res.status(403).send("ERROR 403: Email not found. Try again.");
     return;
   } else if (!bcrypt.compareSync(req.body.password, user.password)) {
-    res.status(403).send("Password doesn't match. Try Again.");
+    res.status(403).send("ERROR 403: Password doesn't match. Try Again.");
     return;
   } else {
     req.session.user_id = user.id;
@@ -77,11 +82,11 @@ app.post("/register", (req, res) => {
   console.log("POST /register");
   let userID = generateRandomString();
   if (!req.body.email || !req.body.password) {
-    res.status(400).send("Please fill in both your email and password.");
+    res.status(400).send("ERROR 400: Please fill in both your email and password.");
     return;
   }
   if (getUserByEmail(req.body.email, users)) {
-    res.status(400).send("Email already exist.");
+    res.status(400).send("ERROR 400: Email already exist.");
     return;
   }
   console.log("creating new user and redirecting to /urls");
@@ -106,7 +111,7 @@ app.get("/login", (req, res) => {
 app.get("/urls", (req, res) => {
   console.log("GET /urls");
   if (!req.session.user_id) {
-    res.status(401).send("Unauthorized access. Please login.");
+    res.status(401).send("ERROR 401: Unauthorized access. Please login.");
     return;
   } else {
     let filtered = filterUrlDB(urlsForUser(req.session.user_id, urlDatabase), urlDatabase);
@@ -149,12 +154,12 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   console.log("/urls/:shortURL");
   if (!req.session.user_id) {
-    res.status(401).send("Please log in to see page");
+    res.status(401).send("ERROR 401: Please log in to see page");
     return;
   }
 
   if (!(urlsForUser(req.session.user_id, urlDatabase).includes(req.params.shortURL))) {
-    res.status(401).send(`shortURL: ${req.params.shortURL} doesn't belong to you.`)
+    res.status(401).send(`ERROR 401: ${req.params.shortURL} doesn't belong to you.`)
     return;
   }
 
@@ -179,7 +184,11 @@ app.post("/urls/:shortURL", (req, res) => {
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   console.log("POST /urls/:shortURL/delete");
-  if (req.session.user_id && urlsForUser(req.session.user_id).includes(req.params.shortURL)) {
+  console.log("user_id: ", req.session.user_id);
+  console.log("Urls for user:", urlsForUser(req.session.user_id, urlDatabase));
+  console.log("shortURL:", req.params.shortURL)
+
+  if (req.session.user_id && urlsForUser(req.session.user_id, urlDatabase).includes(req.params.shortURL)) {
     delete urlDatabase[req.params.shortURL];
   }
   console.log("After Delete: ", urlDatabase);
