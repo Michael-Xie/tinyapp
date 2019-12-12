@@ -9,6 +9,8 @@ function generateRandomString() {
   return shortURL;
 
 }
+
+const {getUserByEmail} = require("./helpers");
 const express = require("express");
 const cookieSession = require("cookie-session");
 const bcrypt = require('bcrypt');
@@ -29,15 +31,6 @@ const urlDatabase = {
   i3BoGr: { longURL: "https://www.google.ca", userID: "user2RandomID" }
 };
 
-const urlsForUser = function (id) {
-  let urls = [];
-  for (let url in urlDatabase) {
-    if (urlDatabase[url].userID === id) {
-      urls.push(url);
-    }
-  }
-  return urls;
-}
 
 const filterUrlDB = function (urls) {
   filteredDB = {};
@@ -71,29 +64,22 @@ const hasEmail = function (email) {
   return false;
 }
 
-const getUserByEmail = function(email, database) {
-  for (let user in database) {
-    if (database[user].email === email) {
-      return user;
+const urlsForUser = function (id) {
+  let urls = [];
+  for (let url in urlDatabase) {
+    if (urlDatabase[url].userID === id) {
+      urls.push(url);
     }
   }
-  return undefined;
-};
-// const findUserID = function (info, type) {
-//   for (let user in users) {
-//     if (users[user][type] === info) {
-//       return user;
-//     }
-//   }
-//   return undefined;
-// }
+  return urls;
+}
 
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
 app.post("/login", (req, res) => {
-  let userID = getUserByEmail(req.body.email, users);
+  let userID = getUserByEmail(req.body.email, users).id;
   if (hasEmail(req.body.email) && bcrypt.compareSync(req.body.password, users[userID].password)) {
     req.session.user_id = userID;
     console.log(userID);
