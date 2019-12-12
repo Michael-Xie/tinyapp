@@ -1,22 +1,17 @@
-const { urlsForUser, generateRandomString, getUserByEmail, filterUrlDB } = require("./helpers");
+const { hasVistorID, getCurrentDate, formatURL, urlsForUser, generateRandomString, getUserByEmail, filterUrlDB } = require("./helpers");
 const express = require("express");
 const cookieSession = require("cookie-session");
 const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 8080; // default port 8080
+const bodyParser = require("body-parser");
 
 app.set("view engine", "ejs");
-const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieSession({
   name: "session",
   keys: ["key1", "key2"]
 }));
-
-const getCurrentDate = function () {
-  let date = new Date();
-  return date.toDateString();
-};
 
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW", dateCreated: getCurrentDate(), numVisit: 0, uniqueVisitor: [] },
@@ -34,13 +29,6 @@ const users = {
     email: "user2@example.com",
     password: "$2b$10$qgxfbasQ.RFYhuKgvPh7rOBR5JLxAgVQz5cti1cwZMc3TSBoObk/m"
   }
-}
-
-const hasVistorID = function (url_id, visitor_id, urlDatabase) {
-  console.log(urlDatabase[url_id].uniqueVisitor);
-  console.log(visitor_id);
-  console.log(urlDatabase[url_id].uniqueVisitor.includes(visitor_id));
-  return urlDatabase[url_id].uniqueVisitor.includes(visitor_id);
 }
 
 app.use("/u/:shortURL", (req, res, next) => {
@@ -155,7 +143,7 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls", (req, res) => {
   console.log("POST /urls");
   let shortURL = generateRandomString();
-  let longURL = req.body.longURL;
+  let longURL = formatURL(req.body.longURL);
   console.log(longURL);
   urlDatabase[shortURL] = { longURL: longURL, userID: req.session.user_id, dateCreated: getCurrentDate(), numVisit: 0, uniqueVisitor: [] };
   res.redirect(`/urls/${shortURL}`);

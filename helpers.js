@@ -26,7 +26,7 @@ const filterUrlDB = function (urls, urlDatabase) {
     }
   }
   return filteredDB;
-}
+};
 
 const urlsForUser = function (id, urlDatabase) {
   let urls = [];
@@ -36,6 +36,19 @@ const urlsForUser = function (id, urlDatabase) {
     }
   }
   return urls;
-}
+};
 
-module.exports = { urlsForUser, filterUrlDB, generateRandomString, getUserByEmail };
+const formatURL = function(url) {
+  return url.startsWith("http://") || url.startsWith("https://")? url: `https://${url}`;
+};
+
+const getCurrentDate = function () {
+  let date = new Date();
+  return date.toDateString();
+};
+
+const hasVistorID = function (url_id, visitor_id, urlDatabase) {
+  return urlDatabase[url_id].uniqueVisitor.includes(visitor_id);
+};
+
+module.exports = { hasVistorID, getCurrentDate, formatURL, urlsForUser, filterUrlDB, generateRandomString, getUserByEmail };
