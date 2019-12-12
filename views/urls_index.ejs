@@ -15,10 +15,6 @@
   <%- include('partials/_header') %>
 
   <main style="margin: 1em;">
-    <% if(!user) { %>
-      Please login or register to see the shortURLs.
-    <% } %>
-
     <h3>My URLs</h3>
     <table class="table">
       <thead>
@@ -50,6 +46,7 @@
         <% } %>
       </tbody>
     </table>
+    <a class="nav-item nav-link" href="/urls/new">Create a New Short Link</a>
   </main>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
