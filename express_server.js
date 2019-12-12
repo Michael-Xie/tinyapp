@@ -71,21 +71,29 @@ const hasEmail = function (email) {
   return false;
 }
 
-const findUserID = function (info, type) {
-  for (let user in users) {
-    if (users[user][type] === info) {
+const getUserByEmail = function(email, database) {
+  for (let user in database) {
+    if (database[user].email === email) {
       return user;
     }
   }
   return undefined;
-}
+};
+// const findUserID = function (info, type) {
+//   for (let user in users) {
+//     if (users[user][type] === info) {
+//       return user;
+//     }
+//   }
+//   return undefined;
+// }
 
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
 app.post("/login", (req, res) => {
-  let userID = findUserID(req.body.email, "email");
+  let userID = getUserByEmail(req.body.email, users);
   if (hasEmail(req.body.email) && bcrypt.compareSync(req.body.password, users[userID].password)) {
     req.session.user_id = userID;
     console.log(userID);
