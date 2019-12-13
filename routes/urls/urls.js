@@ -5,9 +5,8 @@ const express = require('express');
 const router = express.Router();
 
 module.exports = () => {
-
+  // GET /urls - Render the url collection page
   router.get("/", (req, res) => {
-    console.log("GET /urls");
     if (!req.session.user_id) {
       res.status(401).send("ERROR 401: Unauthorized access. Please login.");
       return;
@@ -18,18 +17,8 @@ module.exports = () => {
     }
   });
 
-  // ADD new entry
-  router.post("/", (req, res) => {
-    console.log("POST /urls");
-    let shortURL = generateRandomString();
-    let longURL = formatURL(req.body.longURL);
-    console.log(longURL);
-    urlDatabase[shortURL] = { longURL: longURL, userID: req.session.user_id, dateCreated: getCurrentDate(), numVisit: 0, uniqueVisitor: [] };
-    res.redirect(`/urls/${shortURL}`);
-  });
-
+  // GET /urls/new - Render page to create new short url
   router.get("/new", (req, res) => {
-    console.log("GET /urls/new");
     if (req.session.user_id) {
       let templateVars = { user: users[req.session.user_id] };
       res.render("urls_new", templateVars);
@@ -39,8 +28,16 @@ module.exports = () => {
     }
   });
 
+  // POST /urls - Create a new short url
+  router.post("/", (req, res) => {
+    let shortURL = generateRandomString();
+    let longURL = formatURL(req.body.longURL);
+    urlDatabase[shortURL] = { longURL: longURL, userID: req.session.user_id, dateCreated: getCurrentDate(), numVisit: 0, uniqueVisitor: [] };
+    res.redirect(`/urls/${shortURL}`);
+  });
+
+  // GET /urls/:shortURL - Render a specified url page
   router.get("/:shortURL", (req, res) => {
-    console.log("/urls/:shortURL");
     if (!req.session.user_id) {
       res.status(401).send("ERROR 401: Please log in to see page");
       return;
@@ -59,31 +56,21 @@ module.exports = () => {
     }
   });
 
-  // UPDATE :shortURL
+  // POST /urls/:shortURL - Update specified short url's long url
   router.post("/:shortURL", (req, res) => {
-    console.log("POST /urls/:shortURL");
     if (req.session.user_id && urlsForUser(req.session.user_id, urlDatabase).includes(req.params.shortURL)) {
-
       urlDatabase[req.params.shortURL] = { longURL: formatURL(req.body.newLongURL), userID: req.session.user_id, dateCreated: getCurrentDate(), numVisit: 0, uniqueVisitor: [] };
     }
-    console.log("After Edit:", urlDatabase);
     res.redirect("/");
   });
 
+  // POST /urls/:shortURL/delete - Remove a specified short url
   router.post("/:shortURL/delete", (req, res) => {
-    console.log("POST /urls/:shortURL/delete");
-    console.log("user_id: ", req.session.user_id);
-    console.log("Urls for user:", urlsForUser(req.session.user_id, urlDatabase));
-    console.log("shortURL:", req.params.shortURL);
-
     if (req.session.user_id && urlsForUser(req.session.user_id, urlDatabase).includes(req.params.shortURL)) {
       delete urlDatabase[req.params.shortURL];
     }
-    console.log("After Delete: ", urlDatabase);
-
     res.redirect("/");
   });
-
 
   return router;
 };

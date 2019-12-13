@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt');
 const router = express.Router();
 
 module.exports = () => {
+  // GET / - Redirect from home based on login status
   router.get("/", (req, res) => {
     if (req.session.user_id) {
       res.redirect("/urls");
@@ -14,21 +15,18 @@ module.exports = () => {
     }
   });
   
+  // GET /login - Render login page
   router.get("/login", (req, res) => {
-    console.log("GET /login");
     if (req.session.user_id) {
-      console.log("logged in and redirecting to /urls");
       res.redirect("/urls");
       return;
     }
     let templateVars = { user: users[req.session.user_id] };
-  
-    console.log(users);
     res.render("login", templateVars);
   });
 
+  // POST /login - Log-in into valid account
   router.post("/login", (req, res) => {
-    console.log("GET /login");
     let user = getUserByEmail(req.body.email, users);
     if (!user) {
       res.status(403).send("ERROR 403: Email not found. Try again.");
@@ -42,10 +40,9 @@ module.exports = () => {
     }
   });
   
+  // GET /register - Render register page
   router.get("/register", (req, res) => {
-    console.log("GET /register");
     if (req.session.user_id) {
-      console.log("logged in and redirecting to /urls");
       res.redirect("/urls");
       return;
     }
@@ -53,8 +50,8 @@ module.exports = () => {
     res.render("registration", templateVars);
   });
   
+  // POST /register - Create a new user
   router.post("/register", (req, res) => {
-    console.log("POST /register");
     let userID = generateRandomString();
     if (!req.body.email || !req.body.password) {
       res.status(400).send("ERROR 400: Please fill in both your email and password.");
@@ -64,14 +61,13 @@ module.exports = () => {
       res.status(400).send("ERROR 400: Email already exist.");
       return;
     }
-    console.log("creating new user and redirecting to /urls");
     users[userID] = { id: userID, email: req.body.email, password: bcrypt.hashSync(req.body.password, 10) };
     req.session.user_id = userID;
     res.redirect("/urls");
   });
 
+  // POST /logout - Log user out by removing encrypted cookie
   router.post("/logout", (req, res) => {
-    console.log("POST /logout");
     req.session = null;
     res.redirect("/urls");
   });
