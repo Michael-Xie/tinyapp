@@ -1,4 +1,4 @@
-const { hasVistorID, getCurrentDate, formatURL, urlsForUser, generateRandomString, getUserByEmail, filterUrlDB } = require("../../helpers");
+const { getCurrentDate, formatURL, urlsForUser, generateRandomString, filterUrlDB } = require("../../helpers");
 const { urlDatabase, users } = require("../../starting-data");
 const express = require('express');
 
@@ -35,7 +35,7 @@ module.exports = () => {
       res.render("urls_new", templateVars);
     } else {
       let templateVars = { user: users[req.session.user_id] };
-      res.render("login", templateVars)
+      res.render("login", templateVars);
     }
   });
 
@@ -47,7 +47,7 @@ module.exports = () => {
     }
 
     if (!(urlsForUser(req.session.user_id, urlDatabase).includes(req.params.shortURL))) {
-      res.status(401).send(`ERROR 401: ${req.params.shortURL} doesn't belong to you.`)
+      res.status(401).send(`ERROR 401: ${req.params.shortURL} doesn't belong to you.`);
       return;
     }
 
@@ -68,13 +68,13 @@ module.exports = () => {
     }
     console.log("After Edit:", urlDatabase);
     res.redirect("/");
-  })
+  });
 
   router.post("/:shortURL/delete", (req, res) => {
     console.log("POST /urls/:shortURL/delete");
     console.log("user_id: ", req.session.user_id);
     console.log("Urls for user:", urlsForUser(req.session.user_id, urlDatabase));
-    console.log("shortURL:", req.params.shortURL)
+    console.log("shortURL:", req.params.shortURL);
 
     if (req.session.user_id && urlsForUser(req.session.user_id, urlDatabase).includes(req.params.shortURL)) {
       delete urlDatabase[req.params.shortURL];
@@ -82,8 +82,8 @@ module.exports = () => {
     console.log("After Delete: ", urlDatabase);
 
     res.redirect("/");
-  })
+  });
 
 
   return router;
-}
+};

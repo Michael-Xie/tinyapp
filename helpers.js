@@ -1,4 +1,4 @@
-const getUserByEmail = function (email, database) {
+const getUserByEmail = function(email, database) {
   for (let user in database) {
     if (database[user].email === email) {
       return database[user];
@@ -7,7 +7,7 @@ const getUserByEmail = function (email, database) {
   return undefined;
 };
 
-const generateRandomString = function () {
+const generateRandomString = function() {
   const alphaNum = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   const numChar = 6;
   let shortURL = "";
@@ -18,17 +18,17 @@ const generateRandomString = function () {
   return shortURL;
 };
 
-const filterUrlDB = function (urls, urlDatabase) {
-  filteredDB = {};
+const filterUrlDB = function(urls, urlDatabase) {
+  let filteredDB = {};
   for (let url_id of urls) {
     if (urlDatabase[url_id]) {
-      filteredDB[url_id] = urlDatabase[url_id]
+      filteredDB[url_id] = urlDatabase[url_id];
     }
   }
   return filteredDB;
 };
 
-const urlsForUser = function (id, urlDatabase) {
+const urlsForUser = function(id, urlDatabase) {
   let urls = [];
   for (let url in urlDatabase) {
     if (urlDatabase[url].userID === id) {
@@ -39,15 +39,15 @@ const urlsForUser = function (id, urlDatabase) {
 };
 
 const formatURL = function(url) {
-  return url.startsWith("http://") || url.startsWith("https://")? url: `https://${url}`;
+  return url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
 };
 
-const getCurrentDate = function () {
+const getCurrentDate = function() {
   let date = new Date();
   return date.toDateString();
 };
 
-const hasVistorID = function (url_id, visitor_id, urlDatabase) {
+const hasVistorID = function(url_id, visitor_id, urlDatabase) {
   return urlDatabase[url_id].uniqueVisitor.includes(visitor_id);
 };
 

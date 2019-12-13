@@ -16,6 +16,6 @@ const users = {
     email: "user2@example.com",
     password: "$2b$10$qgxfbasQ.RFYhuKgvPh7rOBR5JLxAgVQz5cti1cwZMc3TSBoObk/m"
   }
-}
+};
 
 module.exports = { urlDatabase, users };
