@@ -1,4 +1,7 @@
 const { hasVistorID, getCurrentDate, formatURL, urlsForUser, generateRandomString, getUserByEmail, filterUrlDB } = require("./helpers");
+const { urlDatabase, users } = require("./starting-data");
+
+const urlsRoutes = require('./routes/urls/urls');
 const express = require("express");
 const cookieSession = require("cookie-session");
 const bcrypt = require('bcrypt');
@@ -13,23 +16,6 @@ app.use(cookieSession({
   keys: ["key1", "key2"]
 }));
 
-const urlDatabase = {
-  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW", dateCreated: getCurrentDate(), numVisit: 0, uniqueVisitor: [] },
-  i3BoGr: { longURL: "https://www.google.ca", userID: "user2RandomID", dateCreated: getCurrentDate(), numVisit: 0, uniqueVisitor: [] }
-};
-
-const users = {
-  "aJ48lW": {
-    id: "aJ48lW",
-    email: "user@example.com",
-    password: "$2b$10$qgxfbasQ.RFYhuKgvPh7rOBR5JLxAgVQz5cti1cwZMc3TSBoObk/m"
-  },
-  "user2RandomID": {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "$2b$10$qgxfbasQ.RFYhuKgvPh7rOBR5JLxAgVQz5cti1cwZMc3TSBoObk/m"
-  }
-}
 
 app.use("/u/:shortURL", (req, res, next) => {
   if (!req.session.visitor_id) {
@@ -116,38 +102,10 @@ app.get("/login", (req, res) => {
   res.render("login", templateVars);
 });
 
-app.get("/urls", (req, res) => {
-  console.log("GET /urls");
-  if (!req.session.user_id) {
-    res.status(401).send("ERROR 401: Unauthorized access. Please login.");
-    return;
-  } else {
-    let filtered = filterUrlDB(urlsForUser(req.session.user_id, urlDatabase), urlDatabase);
-    let templateVars = { urls: filtered, user: users[req.session.user_id] };
-    res.render("urls_index", templateVars);
-  }
-});
+app.use('/urls', urlsRoutes());
 
-app.get("/urls/new", (req, res) => {
-  console.log("GET /urls/new");
-  if (req.session.user_id) {
-    let templateVars = { user: users[req.session.user_id] };
-    res.render("urls_new", templateVars);
-  } else {
-    let templateVars = { user: users[req.session.user_id] };
-    res.render("login", templateVars)
-  }
-});
 
-// ADD new entry
-app.post("/urls", (req, res) => {
-  console.log("POST /urls");
-  let shortURL = generateRandomString();
-  let longURL = formatURL(req.body.longURL);
-  console.log(longURL);
-  urlDatabase[shortURL] = { longURL: longURL, userID: req.session.user_id, dateCreated: getCurrentDate(), numVisit: 0, uniqueVisitor: [] };
-  res.redirect(`/urls/${shortURL}`);
-});
+
 
 app.get("/u/:shortURL", (req, res) => {
   console.log("/u/:shortURL");
@@ -159,50 +117,7 @@ app.get("/u/:shortURL", (req, res) => {
   }
 });
 
-app.get("/urls/:shortURL", (req, res) => {
-  console.log("/urls/:shortURL");
-  if (!req.session.user_id) {
-    res.status(401).send("ERROR 401: Please log in to see page");
-    return;
-  }
 
-  if (!(urlsForUser(req.session.user_id, urlDatabase).includes(req.params.shortURL))) {
-    res.status(401).send(`ERROR 401: ${req.params.shortURL} doesn't belong to you.`)
-    return;
-  }
-
-  if (urlDatabase[req.params.shortURL]) {
-    let templateVars = { shortURL: req.params.shortURL, url: urlDatabase[req.params.shortURL], user: users[req.session.user_id] };
-    res.render("urls_show", templateVars);
-  } else {
-    res.redirect("/urls/new");
-  }
-});
-
-// UPDATE :shortURL
-app.post("/urls/:shortURL", (req, res) => {
-  console.log("POST /urls/:shortURL");
-  if (req.session.user_id && urlsForUser(req.session.user_id, urlDatabase).includes(req.params.shortURL)) {
-
-    urlDatabase[req.params.shortURL] = { longURL: req.body.newLongURL, userID: req.session.user_id , dateCreated: getCurrentDate(), numVisit: 0, uniqueVisitor: []};
-  }
-  console.log("After Edit:", urlDatabase);
-  res.redirect("/urls");
-})
-
-app.post("/urls/:shortURL/delete", (req, res) => {
-  console.log("POST /urls/:shortURL/delete");
-  console.log("user_id: ", req.session.user_id);
-  console.log("Urls for user:", urlsForUser(req.session.user_id, urlDatabase));
-  console.log("shortURL:", req.params.shortURL)
-
-  if (req.session.user_id && urlsForUser(req.session.user_id, urlDatabase).includes(req.params.shortURL)) {
-    delete urlDatabase[req.params.shortURL];
-  }
-  console.log("After Delete: ", urlDatabase);
-
-  res.redirect("/urls");
-})
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
