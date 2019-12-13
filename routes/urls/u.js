@@ -5,7 +5,7 @@ const express = require('express');
 const router = express.Router();
 
 module.exports = () => {
-  // Track unique visitors that visit the specified shortened url
+  // Track unique visitors that visit the specified shortened url by using a vistior_id cookie
   router.use("/:shortURL", (req, res, next) => {
     if (!req.session.visitor_id) {
       req.session.visitor_id = generateRandomString();
