@@ -69,7 +69,7 @@ module.exports = () => {
   // POST /logout - Log user out by removing encrypted cookie
   router.post("/logout", (req, res) => {
     req.session = null;
-    res.redirect("/urls");
+    res.redirect("/login");
   });
   return router;
 };
